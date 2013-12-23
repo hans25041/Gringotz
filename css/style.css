@@ -4,6 +4,10 @@ html {
   background: black;
 }
 
+.hide {
+  display: none;
+}
+
 #status {
   float: left;
   padding-right: 30px;
@@ -23,6 +27,19 @@ html {
 }
 
 #stage {
+  float: left;
+  padding-right: 30px;
+  width: 530px;
+  height: 382px;
+}
+
+#game-over {
+  display: block;
+  margin: 100px;
+  color: SteelBlue;
+}
+
+#incantation {
   float: left;
 }
 
