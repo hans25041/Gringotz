@@ -1,0 +1,44 @@
+html {
+  font-family: Andale Mono, monospace;
+  color: white;
+  background: black;
+}
+
+#status {
+  float: left;
+  padding-right: 30px;
+  line-height: 28px;
+}
+
+#status .label {
+  width: 100px;
+  display: inline-block;
+}
+
+#status .value {
+  width: 20px;
+  display: inline-block;
+  color: green;
+  text-align: right;
+}
+
+#stage {
+  float: left;
+}
+
+#messages {
+  clear:both;
+  margin:auto;
+}
+
+.wall {
+  color: brown;
+}
+
+.gold {
+  color: gold;
+}
+
+.door {
+  color: brown;
+}
