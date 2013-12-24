@@ -52,8 +52,8 @@
       case '@':
         sprite = sprites.player;
         break;
-      case 'm':
-        sprite = sprites.monster;
+      case 'T':
+        sprite = sprites.troll;
         break;
 
       // Default
@@ -72,7 +72,7 @@
     stairs_down: '<span class="stairs">&gt;</span>',
     stairs_up:   '<span class="stairs">&lt;</span>',
     hole:        '<span class="hole">&nbsp;</span>',
-    monster:     '<span class="monster">m</span>'
+    troll:       '<span class="troll">T</span>'
   };
 
   player = {
@@ -125,6 +125,11 @@
         return;
       }
 
+      if (screen.get_character(player.position) === 'T') {
+        monsters.troll.kill();
+        return;
+      }
+
       if (screen.get_character(player.position) === 'm') {
         screen.messages.text('You were attacked by a monster and died.');
         screen.game_over();
@@ -140,6 +145,7 @@
       screen.state[player.position.y][player.position.x] = '@';
       screen.refresh();
       screen.render();
+
     },
 
     climb_down: function () {
@@ -183,7 +189,7 @@
       }
     },
 
-    checkAdjacent: function (character) {
+    check_adjacent: function (character) {
       var deltas = [],
         found = [],
         i,
@@ -210,12 +216,31 @@
         }
       }
       return found;
-    }
+    },
 
+    check_row_and_column: function() {
+      var x,
+        y;
+
+      for (y = 0; y < screen.state.length; y += 1) {
+        x = player.position.x;
+        if (screen.state[y][x] === 'T') {
+          return {x: x, y: y};
+        }
+      }
+
+      for (x = 0; x < screen.state[0].length; x += 1) {
+        y = player.position.y;
+        if (screen.state[y][x] === 'T') {
+          return {x: x, y: y};
+        }
+      }
+    }
   };
 
   monsters = {
     visible: [],
+    move_interval: null,
 
     init: function() {
       var y,
@@ -225,8 +250,8 @@
         screen.view[y] = [];
         for (x = 0; x < screen.state[y].length; x += 1) {
           switch (screen.state[y][x]) {
-            case 'm':
-              monsters.register('m', {x: x, y: y});
+            case 'T':
+              monsters.register('T', {x: x, y: y});
               break;
             default:
               break;
@@ -234,26 +259,78 @@
         }
       }
 
-      setInterval(monsters.move, 100);
+      monsters.move_interval = setInterval(monsters.move, 300);
+
+    },
+
+    pause: function() {
+      clearInterval(monsters.move_interval);
+    },
+
+    resume: function() {
+      monsters.move_interval = setInterval(monsters.move, 300);
     },
 
     register: function (character, position) {
-      monsters.visible.push({character: character, position: position});
+      var m = {character: character, position: position};
+      switch (m.character) {
+        case 'T':
+          m.move         = monsters.troll.move;
+          m.trajectories = monsters.troll.trajectories;
+          m.trajectory   = 0;
+          break;
+      }
+      monsters.visible.push(m);
     },
 
     move: function() {
       var i,
-        m,
-        test_p;
+        m;
 
-      for (i = 0; i < monsters.visible; i += 1) {
+      for (i = 0; i < monsters.visible.length; i += 1) {
         m = monsters.visible[i];
-        test_p = {x: m.position.x + 1, y: m.position.y};
-        if (screen.get_character(test_p) === '.') {
-          screen.state[m.position.x][m.position.y] = screen.format[m.position.x][m.position.y];
-          m.position = test_p;
-          screen.state[m.position.x][m.position.y] = m.character;
+        m.move(m);
+      }
+      screen.refresh();
+      screen.render();
+    },
+
+    troll: {
+      trajectories: [
+        {x: -1, y: 0},
+        {x:  1, y: 0},
+        {x:  0, y: -1},
+        {x:  0, y:  1},
+      ],
+
+      move: function(m) {
+        var test_p,
+          t;
+        t = this.trajectories[this.trajectory];
+        test_p = {x: m.position.x + t.x, y: m.position.y + t.y};
+        if (screen.get_character(test_p) === '@') {
+          monsters.troll.kill();
         }
+        if (screen.get_character(test_p) !== '.') {
+          if (this.trajectory < 3) {
+            this.trajectory += 1;
+          } else {
+            this.trajectory = 0;
+          }
+          t = this.trajectories[this.trajectory];
+          test_p = {x: m.position.x + t.x, y: m.position.y + t.y};
+        }
+        if (screen.format[m.position.y][m.position.x] === 'T') {
+          screen.format[m.position.y][m.position.x] = '.';
+        }
+        screen.state[m.position.y][m.position.x] = screen.format[m.position.y][m.position.x];
+        m.position = test_p;
+        screen.state[m.position.y][m.position.x] = m.character;
+      },
+
+      kill: function() {
+        screen.messages.text('A troll mercilessly beat you to death. It was quite aweful.');
+        screen.game_over();
       }
 
     }
@@ -265,7 +342,7 @@
         i,
         l;
 
-      doors = player.checkAdjacent('|');
+      doors = player.check_adjacent('|');
       if (doors.length === 0) {
         screen.messages.text('No doors to unlock');
         return;
@@ -278,12 +355,31 @@
       }
       screen.messages.text('Unlock door');
       screen.render();
+    },
+
+    stupify: function() {
+      monsters.pause();
+      var i,
+        m,
+        p;
+
+      p = player.check_row_and_column();
+
+      for (i = 0; i < monsters.visible.length; i += 1) {
+        m = monsters.visible[i];
+        if (m.position.x === p.x && m.position.y === p.y) {
+          monsters.visible.splice(i);
+          screen.state[p.y][p.x] = '.';
+          player.experience += 2
+        }
+      }
+      
+      monsters.resume();
     }
   }
 
   listeners = {
     keydown: function (e) {
-      console.log(e);
       var key;
       if (player.incanting === true) return;
       switch (e.keyCode) {
@@ -331,6 +427,7 @@
     width: 0,
     height: 0,
     basement: 0,
+    over: false,
 
     init: function () {
       // Get a handle on the stage.
@@ -371,7 +468,7 @@
           screen.state  = state;
 
           screen.state[player.position.y][player.position.x] = '@';
-          //monsters.init();
+          monsters.init();
 
           // Render
           screen.render();
@@ -401,6 +498,10 @@
         x,
         row;
 
+      if (screen.over === true) {
+        return false;
+      }
+
       // Prepare view
       for (y = 0; y < screen.state.length; y += 1) {
         screen.view[y] = [];
@@ -422,6 +523,8 @@
     },
 
     game_over: function() {
+      $(document).off('keydown');
+      screen.over = true;
       screen.stage.html('<h1 id="game-over">Game Over</h1>');
     }
   };
