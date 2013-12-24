@@ -47,15 +47,13 @@ html {
   clear:both;
 }
 
-// Sprites
-.wall {
-  color: brown;
-}
+/* Sprites */
 
 .gold {
   color: gold;
 }
 
+.wall,
 .door {
   color: brown;
 }
