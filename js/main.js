@@ -99,10 +99,10 @@
       case 'right':
         player.position.x += 1;
         break;
-      case 'd':
+      case '>':
         player.climb_down();
         break;
-      case 'u':
+      case '<':
         player.climb_up();
         break;
       case 'i':
