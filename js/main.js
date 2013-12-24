@@ -7,7 +7,8 @@
     player,
     listeners,
     screen,
-    spells;
+    spells,
+    monsters;
 
   function main() {
     screen.init();
@@ -51,6 +52,9 @@
       case '@':
         sprite = sprites.player;
         break;
+      case 'm':
+        sprite = sprites.monster;
+        break;
 
       // Default
       default:
@@ -67,7 +71,8 @@
     gold:        '<span class="gold">g</span>',
     stairs_down: '<span class="stairs">&gt;</span>',
     stairs_up:   '<span class="stairs">&lt;</span>',
-    hole:        '<span class="hole">&nbsp;</span>'
+    hole:        '<span class="hole">&nbsp;</span>',
+    monster:     '<span class="monster">m</span>'
   };
 
   player = {
@@ -104,18 +109,24 @@
         player.incantation();
       }
 
-      if (screen.state[player.position.y][player.position.x] === '#') {
+      if (screen.get_character(player.position) === '#') {
         player.position = {x: origin_x, y: origin_y};
         screen.messages.text('You cannot walk through walls.');
       }
 
-      if (screen.state[player.position.y][player.position.x] === '|') {
+      if (screen.get_character(player.position) === '|') {
         player.position = {x: origin_x, y: origin_y};
         screen.messages.text('You cannot walk through locked doors.');
       }
 
-      if (screen.state[player.position.y][player.position.x] === ' ') {
+      if (screen.get_character(player.position) === ' ') {
         screen.messages.text('You fell in a hole and died.');
+        screen.game_over();
+        return;
+      }
+
+      if (screen.get_character(player.position) === 'm') {
+        screen.messages.text('You were attacked by a monster and died.');
         screen.game_over();
         return;
       }
@@ -203,6 +214,51 @@
 
   };
 
+  monsters = {
+    visible: [],
+
+    init: function() {
+      var y,
+        x;
+
+      for (y = 0; y < screen.state.length; y += 1) {
+        screen.view[y] = [];
+        for (x = 0; x < screen.state[y].length; x += 1) {
+          switch (screen.state[y][x]) {
+            case 'm':
+              monsters.register('m', {x: x, y: y});
+              break;
+            default:
+              break;
+          }
+        }
+      }
+
+      setInterval(monsters.move, 100);
+    },
+
+    register: function (character, position) {
+      monsters.visible.push({character: character, position: position});
+    },
+
+    move: function() {
+      var i,
+        m,
+        test_p;
+
+      for (i = 0; i < monsters.visible; i += 1) {
+        m = monsters.visible[i];
+        test_p = {x: m.position.x + 1, y: m.position.y};
+        if (screen.get_character(test_p) === '.') {
+          screen.state[m.position.x][m.position.y] = screen.format[m.position.x][m.position.y];
+          m.position = test_p;
+          screen.state[m.position.x][m.position.y] = m.character;
+        }
+      }
+
+    }
+  };
+
   spells = {
     alohamora: function() {
       var doors,
@@ -285,6 +341,10 @@
 
     },
 
+    get_character: function(p) {
+      return screen.state[p.y][p.x];
+    },
+
     load: function (basement) {
       screen.basement = basement;
 
@@ -306,6 +366,7 @@
           screen.state  = state;
 
           screen.state[player.position.y][player.position.x] = '@';
+          //monsters.init();
 
           // Render
           screen.render();
