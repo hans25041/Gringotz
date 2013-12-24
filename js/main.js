@@ -283,6 +283,7 @@
 
   listeners = {
     keydown: function (e) {
+      console.log(e);
       var key;
       if (player.incanting === true) return;
       switch (e.keyCode) {
@@ -302,11 +303,15 @@
       case 40:
         key = 'down';
         break;
-      case 68:
-        key = 'd';
+      case 190:
+        if (e.shiftKey === true) {
+          key = '>';
+        }
         break;
-      case 85:
-        key = 'u';
+      case 188:
+        if (e.shiftKey === true) {
+          key = '<';
+        }
         break;
       case 73:
         key = 'i';
