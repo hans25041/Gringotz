@@ -1,20 +1,22 @@
 class Browser
-  constructor: (stage, location, @b) ->
+  constructor: (stage, location, message, @b) ->
     @stage = new Stage stage
     @location = new Location location
-    @listeners = []
+    @message = new Message message
+    @key_listeners = []
     @listen()
-    @interval = setInterval @render, 500
+    @render()
+    @game = on
 
   render: =>
     @stage.render @b.view()
     @location.render @b.name
 
-  register_listener: (o) ->
-    @listeners.push(o)
+  register_key_listener: (o) ->
+    @key_listeners.push(o)
 
   listen: ->
-    $(window).keydown @propagate_key
+    $(window).on 'keydown', @propagate_key
 
   propagate_key: (e) =>
     if e.shiftKey is on
@@ -29,6 +31,13 @@ class Browser
         when 38, 75 then key = 'up'
         when 40, 74 then key = 'down'
         else return
-    l.handle_key @b, key for l in @listeners
-    @render()
+    l.handle_key @b, key for l in @key_listeners
+    if @game is on
+      @render()
+
+  player_died: (p) =>
+    $(window).off 'keydown', @propagate_key
+    @stage.render '<h1 id="game-over">Game Over</h1>'
+    @game = off
+    @message.game_over @b.state[p.y][p.x]
 

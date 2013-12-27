@@ -39,20 +39,15 @@ class Basement
     @state[p.y][p.x] = character.symbol
 
 
-  move: (character, direction) ->
+  move: (character, direction, fn) ->
+
     c = @characters[character]
     p1 = {x: c.position.x, y: c.position.y}
-    @state[p1.y][p1.x] = '.'
 
     c.move(direction)
     p2 = {x: c.position.x, y: c.position.y}
 
-    if @state[p2.y][p2.x] isnt '#'
-      c.position = p2
-    else
-      c.position = p1
-
-    @state[c.position.y][c.position.x] = c.symbol
+    fn @state, p1, p2
 
   view: ->
     view = ''

@@ -1,10 +1,9 @@
 main = ->
   b1 = build_basement()
-  b = new Browser $('#stage'), $('#location'), b1
-  b.register_listener b1.characters[b1.player]
-
-  #callback = -> first_move b, b1
-  #setTimeout callback, 500
+  b = new Browser $('#stage'), $('#location'), $('#messages'), b1
+  p = b1.characters[b1.player]
+  b.register_key_listener p
+  p.register_death_listener b
 
 build_basement = ->
   b1 = new Basement 'B1', {width: 80, height: 20}
