@@ -1,8 +1,10 @@
 class Browser
-  constructor: (stage, location, message, @b) ->
+  constructor: (stage, location, message, gold, experience, @b) ->
     @stage = new Stage stage
     @location = new Location location
     @message = new Message message
+    @gold = new Gold gold
+    @experience = new Experience experience
     @key_listeners = []
     @listen()
     @render()
@@ -11,6 +13,8 @@ class Browser
   render: =>
     @stage.render @b.view()
     @location.render @b.name
+    @gold.render @b.characters[@b.player].gold
+    @experience.render @b.characters[@b.player].experience
 
   register_key_listener: (o) ->
     @key_listeners.push(o)

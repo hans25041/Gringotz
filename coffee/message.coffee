@@ -6,6 +6,7 @@ class Message
 
   game_over: (killer) ->
     switch killer
-      when 'T' then message = 'You were killed by a Troll. It was quite aweful.'
+      when 'T' then message = 'A troll mercilessly beat you to death. It was quite aweful.'
+      when 'G' then message = 'A goblin killed you.'
 
     @render message

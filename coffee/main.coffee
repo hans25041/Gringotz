@@ -1,6 +1,6 @@
 main = ->
   b1 = build_basement()
-  b = new Browser $('#stage'), $('#location'), $('#messages'), b1
+  b = new Browser $('#stage'), $('#location'), $('#messages'), $('#gold'), $('#experience'), b1
   p = b1.characters[b1.player]
   b.register_key_listener p
   p.register_death_listener b

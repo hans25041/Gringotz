@@ -3,6 +3,8 @@ class Player extends Character
     @symbol = '@'
     @directions = ['up', 'down', 'left', 'right']
     @death_listeners = []
+    @gold = 0
+    @experience = 0
 
   register_death_listener: (o) ->
     @death_listeners.push(o)
@@ -15,10 +17,16 @@ class Player extends Character
     target = state[p2.y][p2.x]
     switch target
       when '#' then @position = p1
-      when 'T' then @die(p2)
-      else
-        state[p1.y][p1.x] = '.'
-        state[p2.y][p2.x] = '@'
+      when '|' then @position = p1
+      when 'g'
+        @gold += 1
+        @_move state, p1, p2
+      when 'T','G' then @die(p2)
+      else @_move state, p1, p2
+
+  _move: (s, p1, p2) ->
+    s[p1.y][p1.x] = '.'
+    s[p2.y][p2.x] = '@'
 
   die: (p) ->
     l.player_died(p) for l in @death_listeners

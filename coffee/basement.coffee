@@ -9,8 +9,20 @@ class Basement
     for y in [0..@height]
       @state[y] = []
       for x in [0..@width]
-        @state[y][x] = '.'
+        @state[y][x] = @random()
     @perimeter_wall()
+
+  random: ->
+    i = Math.floor(Math.random() * 4)
+
+    switch i
+      when 1 then c = '#'
+      when 2 then c = '|'
+      when 3 then c = 'g'
+      else c = '.'
+
+    return c
+
 
   perimeter_wall: ->
     for x in [0..@width]
@@ -67,6 +79,8 @@ class Basement
       when 'G' then c = ['goblin']
       when '>' then c = ['down', 'stairs']
       when '<' then c = ['up', 'stairs']
+      when '|' then c = ['door']
+      when 'g' then c = ['gold']
 
     return "<span class=\"#{ c.join(' ') }\">#{ char }</span>"
 
