@@ -9,7 +9,7 @@
   Browser = (function() {
     function Browser(stage, location, message, gold, experience, b) {
       this.b = b;
-      this.player_died = __bind(this.player_died, this);
+      this.game_over = __bind(this.game_over, this);
       this.propagate_key = __bind(this.propagate_key, this);
       this.render = __bind(this.render, this);
       this.stage = new Stage(stage);
@@ -83,7 +83,7 @@
       }
     };
 
-    Browser.prototype.player_died = function(p) {
+    Browser.prototype.game_over = function(p) {
       $(window).off('keydown', this.propagate_key);
       this.stage.render('<h1 id="game-over">Game Over</h1>');
       this.game = false;
@@ -425,7 +425,7 @@
       _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         l = _ref[_i];
-        _results.push(l.player_died(p));
+        _results.push(l.game_over(p));
       }
       return _results;
     };

@@ -29,4 +29,4 @@ class Player extends Character
     s[p2.y][p2.x] = '@'
 
   die: (p) ->
-    l.player_died(p) for l in @death_listeners
+    l.game_over(p) for l in @death_listeners

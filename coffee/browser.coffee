@@ -1,10 +1,10 @@
 class Browser
   constructor: (stage, location, message, gold, experience, @b) ->
-    @stage = new Stage stage
-    @location = new Location location
-    @message = new Message message
-    @gold = new Gold gold
-    @experience = new Experience experience
+    @stage         = new Stage stage
+    @location      = new Location location
+    @message       = new Message message
+    @gold          = new Gold gold
+    @experience    = new Experience experience
     @key_listeners = []
     @listen()
     @render()
@@ -39,7 +39,7 @@ class Browser
     if @game is on
       @render()
 
-  player_died: (p) =>
+  game_over: (p) =>
     $(window).off 'keydown', @propagate_key
     @stage.render '<h1 id="game-over">Game Over</h1>'
     @game = off
