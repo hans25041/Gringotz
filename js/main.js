@@ -4,11 +4,11 @@
   "use strict";
 
   var sprites,
-    player,
-    listeners,
-    screen,
-    spells,
-    monsters;
+      player,
+      listeners,
+      screen,
+      spells,
+      monsters;
 
   function main() {
     screen.init();
@@ -19,7 +19,7 @@
     main();
   });
 
-  sprites = {
+  var sprites = {
     format: function (character) {
       var sprite;
       switch (character) {
@@ -175,21 +175,23 @@
       $(document).on('keypress', player.incant);
     },
 
+    term_incant: function() {
+      $(document).off('keypress', player.incant);
+      $('#incantation-input').val('');
+      screen.incantation.addClass('hide');
+      player.incanting = false;
+    },
+
     incant: function (e) {
       if (e.keyCode !== 13) return;
       var spell = $('#incantation-input').val().toLowerCase();
       $('#incantation-input').val('');
-      function finish() {
-        $(document).off('keypress', player.incant);
-        screen.incantation.addClass('hide');
-        player.incanting = false;
-      }
       if (spell in spells) {
         spells[spell]();
-        finish()
+        player.term_incant()
       } else {
         screen.messages.text(spell + ' is not a known spell.');
-        finish()
+        player.term_incant()
       }
     },
 
@@ -385,7 +387,10 @@
   listeners = {
     keydown: function (e) {
       var key;
-      if (player.incanting === true) return;
+      if (player.incanting === true) {
+        if (e.keyCode === 27 ) player.term_incant();
+        return;
+      }
       switch (e.keyCode) {
       case 72: // h
       case 37:
