@@ -179,13 +179,17 @@
       if (e.keyCode !== 13) return;
       var spell = $('#incantation-input').val().toLowerCase();
       $('#incantation-input').val('');
-      if (spell in spells) {
-        spells[spell]();
+      function finish() {
         $(document).off('keypress', player.incant);
         screen.incantation.addClass('hide');
         player.incanting = false;
+      }
+      if (spell in spells) {
+        spells[spell]();
+        finish()
       } else {
         screen.messages.text(spell + ' is not a known spell.');
+        finish()
       }
     },
 
@@ -244,7 +248,7 @@
 
     init: function() {
       var y,
-        x;
+          x;
 
       for (y = 0; y < screen.state.length; y += 1) {
         screen.view[y] = [];
@@ -360,20 +364,20 @@
     stupify: function() {
       monsters.pause();
       var i,
-        m,
-        p;
+          p,
+          m;
 
-      p = player.check_row_and_column();
+      p = player.position;
 
       for (i = 0; i < monsters.visible.length; i += 1) {
-        m = monsters.visible[i];
-        if (m.position.x === p.x && m.position.y === p.y) {
+        m = monsters.visible[i].position;
+        if (m.x === p.x || m.y === p.y) {
           monsters.visible.splice(i);
-          screen.state[p.y][p.x] = '.';
+          screen.state[m.y][m.x] = '.';
           player.experience += 2
         }
       }
-      
+
       monsters.resume();
     }
   }
@@ -454,8 +458,12 @@
         url: 'levels/' + screen.basement.toString(),
         success: function (l) {
           var format,
-            state,
-            i;
+              state,
+              i;
+
+
+          // Remove monsters
+          monsters.visible = []
 
           // Load basement format.
           format = l.split(/\n/);
