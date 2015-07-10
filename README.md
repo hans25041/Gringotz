@@ -1,6 +1,9 @@
 Gringotz
 ========
 
+[Play online](http://chris-hanson.me/Gringotz/)
+
+
 About
 -----
 Gringotz is a roguelike dungeon explorer based in the famous wizarding bank by 
