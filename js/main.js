@@ -37,7 +37,10 @@
         sprite = sprites.stairs_up;
         break;
       case '|':
-        sprite = sprites.locked_door;
+        sprite = sprites.v_locked_door;
+        break;
+      case '-':
+        sprite = sprites.h_locked_door;
         break;
       case ' ':
         sprite = sprites.hole;
@@ -64,15 +67,16 @@
       return sprite;
     },
 
-    player:      '<span class="player">@</span>',
-    wall:        '<span class="wall">#</span>',
-    space:       '<span class="space">.</span>',
-    locked_door: '<span class="door">|</span>',
-    gold:        '<span class="gold">g</span>',
-    stairs_down: '<span class="stairs">&gt;</span>',
-    stairs_up:   '<span class="stairs">&lt;</span>',
-    hole:        '<span class="hole">&nbsp;</span>',
-    troll:       '<span class="troll">T</span>'
+    player:        '<span class="player">@</span>',
+    wall:          '<span class="wall">#</span>',
+    space:         '<span class="space">.</span>',
+    v_locked_door: '<span class="door">|</span>',
+    h_locked_door: '<span class="door">-</span>',
+    gold:          '<span class="gold">g</span>',
+    stairs_down:   '<span class="stairs">&gt;</span>',
+    stairs_up:     '<span class="stairs">&lt;</span>',
+    hole:          '<span class="hole">&nbsp;</span>',
+    troll:         '<span class="troll">T</span>'
   };
 
   player = {
@@ -82,9 +86,7 @@
     incanting: false,
     move: function (key) {
       var origin_x = player.position.x,
-        origin_y = player.position.y;
-
-      screen.messages.text('');
+          origin_y = player.position.y;
 
       switch (key) {
       case 'up':
@@ -107,38 +109,52 @@
         break;
       case 'i':
         player.incantation();
+        break;
+      case 'help':
+        screen.show_help();
+        break;
+      case 'peruse':
+        screen.show_spellbook();
+        break;
       }
 
-      if (screen.get_character(player.position) === '#') {
+      var player_on = screen.get_character(player.position)
+
+      screen.messages.text('');
+
+      if (player_on === '#') {
         player.position = {x: origin_x, y: origin_y};
         screen.messages.text('You cannot walk through walls.');
       }
 
-      if (screen.get_character(player.position) === '|') {
+      if (player_on === '|' || player_on === '-') {
         player.position = {x: origin_x, y: origin_y};
         screen.messages.text('You cannot walk through locked doors.');
       }
 
-      if (screen.get_character(player.position) === ' ') {
+      if (player_on === ' ') {
         screen.messages.text('You fell in a hole and died.');
         screen.game_over();
         return;
       }
 
-      if (screen.get_character(player.position) === 'T') {
+      if (player_on === 'T') {
         monsters.troll.kill();
         return;
       }
 
-      if (screen.get_character(player.position) === 'm') {
+      if (player_on === 'm') {
         screen.messages.text('You were attacked by a monster and died.');
         screen.game_over();
         return;
       }
 
+      if (player_on === 'g') {
+        player.gold += 1;
+      }
+
       if (screen.format[origin_y][origin_x] === 'g') {
         screen.format[origin_y][origin_x] = '.';
-        player.gold += 1;
       }
 
       screen.state[origin_y][origin_x] = screen.format[origin_y][origin_x];
@@ -301,6 +317,18 @@
       screen.render();
     },
 
+    remove: function(p) {
+      var i;
+      var mp;
+      for (i = 0; i < monsters.visible.length; i += 1) {
+        mp = monsters.visible[i].position;
+        if (mp.x === p.x && mp.y === p.y) {
+          monsters.visible.splice(i, 1)
+          screen.state[p.y][p.x] = '.';
+        }
+      }
+    },
+
     troll: {
       trajectories: [
         {x: -1, y: 0},
@@ -311,27 +339,34 @@
 
       move: function(m) {
         var test_p,
-          t;
+            test_c,
+            t;
+
         t = this.trajectories[this.trajectory];
         test_p = {x: m.position.x + t.x, y: m.position.y + t.y};
-        if (screen.get_character(test_p) === '@') {
+        test_c = screen.get_character(test_p)
+
+        if (test_c === '@') {
           monsters.troll.kill();
         }
-        if (screen.get_character(test_p) !== '.') {
+
+        if (test_c === '#' || test_c === '-' || test_c === '|') {
           if (this.trajectory < 3) {
             this.trajectory += 1;
           } else {
             this.trajectory = 0;
           }
-          t = this.trajectories[this.trajectory];
-          test_p = {x: m.position.x + t.x, y: m.position.y + t.y};
+          return this.move(m);
         }
+
         if (screen.format[m.position.y][m.position.x] === 'T') {
           screen.format[m.position.y][m.position.x] = '.';
         }
+
         screen.state[m.position.y][m.position.x] = screen.format[m.position.y][m.position.x];
         m.position = test_p;
         screen.state[m.position.y][m.position.x] = m.character;
+
       },
 
       kill: function() {
@@ -348,7 +383,7 @@
         i,
         l;
 
-      doors = player.check_adjacent('|');
+      doors = player.check_adjacent('|').concat(player.check_adjacent('-'));
       if (doors.length === 0) {
         screen.messages.text('No doors to unlock');
         return;
@@ -363,20 +398,81 @@
       screen.render();
     },
 
+    stupify_check: function(t) {
+      if (t.y < 0 ||
+          t.x < 0 ||
+          t.y >= screen.state.length ||
+          t.x >= screen.state[t.y].length ) return 0;
+
+      if ( screen.state[t.y][t.x] === '#' ||
+           screen.state[t.y][t.x] === '-' ||
+           screen.state[t.y][t.x] === '|' ) {
+        return -1;
+      }
+
+      if (screen.state[t.y][t.x] === 'T') {
+        monsters.remove(t);
+        player.experience += 2;
+        return 1
+      }
+
+      return 0;
+    },
+
     stupify: function() {
       monsters.pause();
-      var i,
-          p,
-          m;
+      var
+          i,
+          m,
+          p = player.position,
+          r = (player.experience + 1) * 2;
 
-      p = player.position;
 
-      for (i = 0; i < monsters.visible.length; i += 1) {
-        m = monsters.visible[i].position;
-        if (m.x === p.x || m.y === p.y) {
-          monsters.visible.splice(i);
-          screen.state[m.y][m.x] = '.';
-          player.experience += 2
+      for (i = 1; i <= r; i += 1) {
+        switch (spells.stupify_check({x: p.x, y: p.y + i}, screen)) {
+          case 1:
+            monsters.resume();
+            return true;
+          case -1:
+            break;
+          default:
+            continue;
+        }
+      }
+
+      for (i = 1; i <= r; i += 1) {
+        switch (spells.stupify_check({x: p.x, y: p.y - i}, screen)) {
+          case 1:
+            monsters.resume();
+            return true;
+          case -1:
+            break;
+          default:
+            continue;
+        }
+      }
+
+      for (i = 1; i <= r; i += 1) {
+        switch (spells.stupify_check({x: p.x + i, y: p.y}, screen)) {
+          case 1:
+            monsters.resume();
+            return true;
+          case -1:
+            break;
+          default:
+            continue;
+        }
+      }
+
+      for (i = 1; i <= r; i += 1) {
+        switch (spells.stupify_check({x: p.x - i, y: p.y}, screen)) {
+          case 1:
+            monsters.resume();
+            return true;
+          case -1:
+            break;
+          default:
+            continue;
         }
       }
 
@@ -391,7 +487,22 @@
         if (e.keyCode === 27 ) player.term_incant();
         return;
       }
+      if (screen.helping === true) {
+        if (e.keyCode === 27 ) screen.dismiss_help();
+        return;
+      }
+      if (screen.perusing === true) {
+        if (e.keyCode === 27 ) screen.dismiss_spellbook();
+        return;
+      }
+      console.log(e.keyCode);
       switch (e.keyCode) {
+      case 81:
+        key = 'help';
+        break;
+      case 80:
+        key = 'peruse';
+        break;
       case 72: // h
       case 37:
         key = 'left';
@@ -437,6 +548,8 @@
     height: 0,
     basement: 0,
     over: false,
+    helping: false,
+    perusing: false,
 
     init: function () {
       // Get a handle on the stage.
@@ -445,11 +558,39 @@
       screen.location    = $('#location');
       screen.gold        = $('#gold');
       screen.experience  = $('#experience');
+      screen.help_hint   = $('#help-hint');
+      screen.spell_hint  = $('#spell-hint');
       screen.incantation = $('#incantation');
+      screen.help        = $('#help');
+      screen.spellbook   = $('#spellbook');
 
       // Set listeners
       $(document).keydown(listeners.keydown);
 
+    },
+
+    show_help: function() {
+      screen.helping = true;
+      monsters.pause();
+      screen.help.removeClass('hide');
+    },
+
+    dismiss_help: function() {
+      screen.helping = false;
+      monsters.resume();
+      screen.help.addClass('hide');
+    },
+
+    show_spellbook: function() {
+      screen.perusing = true;
+      monsters.pause();
+      screen.spellbook.removeClass('hide');
+    },
+
+    dismiss_spellbook: function() {
+      screen.perusing = false;
+      monsters.resume();
+      screen.spellbook.addClass('hide');
     },
 
     get_character: function(p) {
@@ -532,6 +673,8 @@
       screen.gold.html('<span class="label">Gold:</span><span class="value">' + player.gold.toString() + '</span>');
       screen.location.html('<span class="label">Location:</span><span class="value">B' + screen.basement.toString() + '</span>');
       screen.experience.html('<span class="label">Exp:</span><span class="value">' + player.experience.toString() + '</span>');
+      screen.help_hint.html('<span class="label">Tap q for help.</span>')
+      screen.spell_hint.html('<span class="label">Tap p to peruse the spellbook</span>')
 
     },
 

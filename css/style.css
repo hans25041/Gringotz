@@ -1,6 +1,6 @@
 html {
   font-family: Andale Mono, monospace;
-  color: white;
+  color: #cccccc;
   background: black;
 }
 
@@ -37,6 +37,16 @@ html {
   display: block;
   margin: 100px;
   color: SteelBlue;
+}
+
+.help {
+  position: absolute;
+  top: 50px;
+  left: 270px;
+  background: black;
+  padding: 0 20px;
+  border: 2px solid white;
+  width: 500px;
 }
 
 #incantation {
