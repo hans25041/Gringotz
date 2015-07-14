@@ -398,81 +398,50 @@
       screen.render();
     },
 
-    stupify_check: function(t) {
-      if (t.y < 0 ||
-          t.x < 0 ||
-          t.y >= screen.state.length ||
-          t.x >= screen.state[t.y].length ) return 0;
+    stupify_check: function(m, r, t) {
+      var i, p = t(m);
 
-      if ( screen.state[t.y][t.x] === '#' ||
-           screen.state[t.y][t.x] === '-' ||
-           screen.state[t.y][t.x] === '|' ) {
-        return -1;
+      for (i = 1; i <= r; i += 1) {
+        p = t(p);
+
+        if (p.y < 0 ||
+            p.x < 0 ||
+            p.y >= screen.state.length ||
+            p.x >= screen.state[p.y].length ) return false;
+
+        if ( screen.state[p.y][p.x] === '#' ||
+             screen.state[p.y][p.x] === '-' ||
+             screen.state[p.y][p.x] === '|' ) {
+          return false;
+        }
+
+        if (screen.state[p.y][p.x] === 'T') {
+          monsters.remove(p);
+          player.experience += 2;
+          return true;
+        }
+
       }
-
-      if (screen.state[t.y][t.x] === 'T') {
-        monsters.remove(t);
-        player.experience += 2;
-        return 1
-      }
-
-      return 0;
+      return false;
     },
 
     stupify: function() {
       monsters.pause();
       var
-          i,
-          m,
+          i, k, m, ts,
           p = player.position,
           r = (player.experience + 1) * 2;
 
+      ts = [ function(p) { return {x: p.x, y: p.y + 1} },
+             function(p) { return {x: p.x, y: p.y - 1} },
+             function(p) { return {x: p.x + 1, y: p.y} },
+             function(p) { return {x: p.x - 1, y: p.y} }
+           ]
 
-      for (i = 1; i <= r; i += 1) {
-        switch (spells.stupify_check({x: p.x, y: p.y + i}, screen)) {
-          case 1:
-            monsters.resume();
-            return true;
-          case -1:
-            break;
-          default:
-            continue;
-        }
-      }
-
-      for (i = 1; i <= r; i += 1) {
-        switch (spells.stupify_check({x: p.x, y: p.y - i}, screen)) {
-          case 1:
-            monsters.resume();
-            return true;
-          case -1:
-            break;
-          default:
-            continue;
-        }
-      }
-
-      for (i = 1; i <= r; i += 1) {
-        switch (spells.stupify_check({x: p.x + i, y: p.y}, screen)) {
-          case 1:
-            monsters.resume();
-            return true;
-          case -1:
-            break;
-          default:
-            continue;
-        }
-      }
-
-      for (i = 1; i <= r; i += 1) {
-        switch (spells.stupify_check({x: p.x - i, y: p.y}, screen)) {
-          case 1:
-            monsters.resume();
-            return true;
-          case -1:
-            break;
-          default:
-            continue;
+      for (k in ts) {
+        if (spells.stupify_check(p, r, ts[k])) {
+          monsters.resume();
+          return true;
         }
       }
 
