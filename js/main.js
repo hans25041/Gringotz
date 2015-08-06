@@ -143,11 +143,11 @@
         return;
       }
 
-      if (player_on === 'm') {
-        screen.messages.text('You were attacked by a monster and died.');
-        screen.game_over();
-        return;
-      }
+//    if (player_on === 'm') {
+//      screen.messages.text('You were attacked by a monster and died.');
+//      screen.game_over();
+//      return;
+//    }
 
       if (player_on === 'g') {
         player.gold += 1;
@@ -570,15 +570,19 @@
       screen.basement = basement;
 
       $.ajax({
-        url: 'levels/' + screen.basement.toString(),
-        success: function (l) {
+        url: 'http://localhost:3000/' + screen.basement.toString(),
+        success: function (level) {
           var format,
               state,
-              i;
+              i,
+              l;
 
+          console.log(level);
+          l = level["patch"]
 
           // Remove monsters
           monsters.visible = []
+
 
           // Load basement format.
           format = l.split(/\n/);
