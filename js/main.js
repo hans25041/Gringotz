@@ -570,7 +570,7 @@
       screen.basement = basement;
 
       $.ajax({
-        url: 'http://localhost:3000/' + screen.basement.toString(),
+        url: 'http://chris-hanson.me/Gringotz/' + screen.basement.toString(),
         success: function (level) {
           var format,
               state,
