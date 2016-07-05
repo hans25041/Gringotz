@@ -19,7 +19,7 @@
     main();
   });
 
-  var sprites = {
+  sprites = {
     format: function (character) {
       var sprite;
       switch (character) {
@@ -118,7 +118,7 @@
         break;
       }
 
-      var player_on = screen.get_character(player.position)
+      var player_on = screen.get_character(player.position);
 
       screen.messages.text('');
 
@@ -204,10 +204,10 @@
       $('#incantation-input').val('');
       if (spell in spells) {
         spells[spell]();
-        player.term_incant()
+        player.term_incant();
       } else {
         screen.messages.text(spell + ' is not a known spell.');
-        player.term_incant()
+        player.term_incant();
       }
     },
 
@@ -232,7 +232,7 @@
         l = {
           x: player.position.x + deltas[i].x,
           y: player.position.y + deltas[i].y
-        }
+        };
         if (screen.state[l.y][l.x] === character) {
           found.push(l);
         }
@@ -323,7 +323,7 @@
       for (i = 0; i < monsters.visible.length; i += 1) {
         mp = monsters.visible[i].position;
         if (mp.x === p.x && mp.y === p.y) {
-          monsters.visible.splice(i, 1)
+          monsters.visible.splice(i, 1);
           screen.state[p.y][p.x] = '.';
         }
       }
@@ -344,7 +344,7 @@
 
         t = this.trajectories[this.trajectory];
         test_p = {x: m.position.x + t.x, y: m.position.y + t.y};
-        test_c = screen.get_character(test_p)
+        test_c = screen.get_character(test_p);
 
         if (test_c === '@') {
           monsters.troll.kill();
@@ -378,7 +378,7 @@
   };
 
   spells = {
-    alohamora: function() {
+    alohomora: function() {
       var doors,
         i,
         l;
@@ -398,7 +398,7 @@
       screen.render();
     },
 
-    stupify_check: function(m, r, t) {
+    stupefy_check: function(m, r, t) {
       var i, p = t(m);
 
       for (i = 1; i <= r; i += 1) {
@@ -425,21 +425,21 @@
       return false;
     },
 
-    stupify: function() {
+    stupefy: function() {
       monsters.pause();
       var
           i, k, m, ts,
           p = player.position,
           r = (player.experience + 1) * 2;
 
-      ts = [ function(p) { return {x: p.x, y: p.y + 1} },
-             function(p) { return {x: p.x, y: p.y - 1} },
-             function(p) { return {x: p.x + 1, y: p.y} },
-             function(p) { return {x: p.x - 1, y: p.y} }
-           ]
+      ts = [ function(p) { return {x: p.x, y: p.y + 1}; },
+             function(p) { return {x: p.x, y: p.y - 1}; },
+             function(p) { return {x: p.x + 1, y: p.y}; },
+             function(p) { return {x: p.x - 1, y: p.y}; }
+           ];
 
       for (k in ts) {
-        if (spells.stupify_check(p, r, ts[k])) {
+        if (spells.stupefy_check(p, r, ts[k])) {
           monsters.resume();
           return true;
         }
@@ -447,7 +447,7 @@
 
       monsters.resume();
     }
-  }
+  };
 
   listeners = {
     keydown: function (e) {
@@ -472,20 +472,24 @@
       case 80:
         key = 'peruse';
         break;
+      case 65: // a
       case 72: // h
-      case 37:
+      case 37: // left arrow
         key = 'left';
         break;
+      case 87: // w
       case 75: // k
-      case 38:
+      case 38: // up arrow
         key = 'up';
         break;
+      case 68: // d
       case 76: // l
-      case 39:
+      case 39: // right arrow
         key = 'right';
         break;
+      case 83: // s
       case 74: // j
-      case 40:
+      case 40: // down arrow
         key = 'down';
         break;
       case 190:
@@ -570,7 +574,7 @@
       screen.basement = basement;
 
       $.ajax({
-        url: 'http://chris-hanson.me/Gringotz/' + screen.basement.toString(),
+        url: "levels/" + screen.basement.toString(),
         success: function (level) {
           var format,
               state,
@@ -578,10 +582,10 @@
               l;
 
           console.log(level);
-          l = level["patch"]
+          l = level;
 
           // Remove monsters
-          monsters.visible = []
+          monsters.visible = [];
 
 
           // Load basement format.
@@ -646,8 +650,8 @@
       screen.gold.html('<span class="label">Gold:</span><span class="value">' + player.gold.toString() + '</span>');
       screen.location.html('<span class="label">Location:</span><span class="value">B' + screen.basement.toString() + '</span>');
       screen.experience.html('<span class="label">Exp:</span><span class="value">' + player.experience.toString() + '</span>');
-      screen.help_hint.html('<span class="label">Tap q for help.</span>')
-      screen.spell_hint.html('<span class="label">Tap p to peruse the spellbook</span>')
+      screen.help_hint.html('<span class="label">Tap q for help.</span>');
+      screen.spell_hint.html('<span class="label">Tap p to peruse the spellbook</span>');
 
     },
 
