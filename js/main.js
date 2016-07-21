@@ -370,7 +370,7 @@
       },
 
       kill: function() {
-        screen.messages.text('A troll mercilessly beat you to death. It was quite aweful.');
+        screen.messages.text('A troll mercilessly beat you to death. It was quite awful.');
         screen.game_over();
       }
 
