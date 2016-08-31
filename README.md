@@ -1,7 +1,7 @@
 Gringotz
 ========
 
-[Play online](http://chris-hanson.me/Gringotz/)
+[Play online](http://gringotz.chris-hanson.me)
 
 
 About
